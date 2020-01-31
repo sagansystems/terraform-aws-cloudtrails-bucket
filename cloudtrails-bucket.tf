@@ -71,7 +71,7 @@ data "aws_iam_policy_document" "cloudtrails" {
 
     resources = concat(
       formatlist("${data.template_file.s3_arn_prefix.rendered}/%v/*", sort(var.accounts)),
-      "${data.template_file.s3_arn_prefix.rendered}/${module.identity.account_id}/*"
+      list("${data.template_file.s3_arn_prefix.rendered}/${module.identity.account_id}/*")
     )
 
     condition {
