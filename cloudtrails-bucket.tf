@@ -31,8 +31,8 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
 }
 
 locals {
-  bucket_path  = join("/", compact(list(var.prefix, "AWSLogs")))
-  account_list = sort(compact(concat(list(module.identity.account_id), var.accounts)))
+  bucket_path  = join("/", compact([var.prefix, "AWSLogs"]))
+  account_list = sort(compact(concat([module.identity.account_id], var.accounts)))
 }
 
 data "aws_iam_policy_document" "cloudtrails" {
