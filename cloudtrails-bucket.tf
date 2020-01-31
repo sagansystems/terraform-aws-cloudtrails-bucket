@@ -30,13 +30,9 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
   policy = data.aws_iam_policy_document.cloudtrails.json
 }
 
-data "template_file" "s3_arn_prefix" {
-  template = "$${bucket_arn}/$${path}"
-
-  vars = {
-    bucket_arn = module.s3_bucket.bucket_arn
-    path       = join("/", compact(list(var.prefix, "AWSLogs")))
-  }
+locals {
+  bucket_path  = join("/", compact([var.prefix, "AWSLogs"]))
+  account_list = sort(compact(concat([module.identity.account_id], var.accounts)))
 }
 
 data "aws_iam_policy_document" "cloudtrails" {
@@ -69,9 +65,8 @@ data "aws_iam_policy_document" "cloudtrails" {
       identifiers = ["cloudtrail.amazonaws.com"]
     }
 
-    resources = concat(
-      formatlist("${data.template_file.s3_arn_prefix.rendered}/%v/*", sort(var.accounts)),
-      "${data.template_file.s3_arn_prefix.rendered}/${module.identity.account_id}/*"
+    resources = formatlist(
+      "%s/%s/%s/*", module.s3_bucket.bucket_arn, local.bucket_path, local.account_list
     )
 
     condition {
